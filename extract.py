@@ -41,7 +41,7 @@ def extract_tags(file_name):
     file_tags = open(file_name, "r")
     result = []
     for tag in file_tags:
-        result.append(tag.strip())
+        result.append(tag.strip().lower())
     file_tags.close()
     return result
 
