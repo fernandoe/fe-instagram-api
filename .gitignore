@@ -1,3 +1,4 @@
 __pycache__
 .cache
 .idea
+db.sqlite3
