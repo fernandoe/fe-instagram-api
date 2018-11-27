@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
-from instagram.helpers import filter_tag
+from instagram.helpers import filter_tag, save_tag, extract_tag_count
 from instagram.models import Tag
 
 
@@ -34,6 +34,7 @@ class Command(BaseCommand):
             page_json = script.text.split(' = ', 1)[1].rstrip(';')
             data = json.loads(page_json)
 
+            extract_tag_count(tag, data)
             # for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
             #     # image_src = post['node']['thumbnail_resources'][1]['src']
             #     # print(image_src)
@@ -52,12 +53,7 @@ class Command(BaseCommand):
                 print('Tags: %s' % tags)
 
                 for tag_name in tags:
-                    try:
-                        if Tag.objects.filter(name=tag_name).count() == 0:
-                            Tag.objects.create(name=tag_name)
-                    except Exception as e:
-                        print(f"ERROR: {e.message}")
-                        print(f"TAG: {tag_name}")
+                    save_tag(tag_name)
 
 
 def extract_words_from_message(message):
