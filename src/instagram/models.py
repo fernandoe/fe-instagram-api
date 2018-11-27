@@ -21,3 +21,8 @@ class TagCount(UUIDModel):
 
     def __str__(self):
         return f"{self.tag} => {self.count}"
+
+
+class Post(UUIDModel):
+    shortcode = models.CharField(max_length=100, unique=True)
+    tags = models.TextField()

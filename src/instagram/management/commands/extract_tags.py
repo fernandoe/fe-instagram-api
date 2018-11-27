@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 
-from instagram.helpers import save_tag, extract_tag_count, is_valid_tag
+from instagram.helpers import save_tag, extract_tag_count, is_valid_tag, extract_shortcode
 from instagram.models import Tag
 
 
@@ -45,6 +45,7 @@ class Command(BaseCommand):
             data = json.loads(page_json)
 
             extract_tag_count(tag, data)
+            shortcode = extract_shortcode(data)
 
             for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
                 edges = post['node']['edge_media_to_caption']['edges']

@@ -23,6 +23,19 @@ def extract_tag_count(tag, data):
     TagCount.objects.create(tag=tag_object, count=count)
 
 
+def extract_shortcode(data):
+    # shortcode = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_top_posts']['edges'][0]['count']
+    shortcode = ''
+    return shortcode
+
+
+# for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
+#     edges = post['node']['edge_media_to_caption']['edges']
+#     if len(edges) <= 0:
+#         continue
+#     message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
+
+
 def print_invalid_tag(func):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
