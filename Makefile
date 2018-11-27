@@ -19,3 +19,6 @@ compose-createsuperuser:
 
 compose-extract_tags:
 	docker-compose run --rm api-instagram python manage.py extract_tags
+
+compose-shell:
+	docker-compose run --rm api-instagram python manage.py shell

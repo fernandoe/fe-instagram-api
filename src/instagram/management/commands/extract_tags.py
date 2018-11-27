@@ -9,36 +9,55 @@ from instagram.models import Tag
 
 
 class Command(BaseCommand):
-    help = 'Extract tags from images'
+    help = 'Extract tags from teh Instagram images'
+
+    def add_arguments(self, parser):
+        parser.add_argument('-t', '--tag', type=str, help='Extract tags from the informed tag', )
 
     def handle(self, *args, **options):
-        r = requests.get('https://www.instagram.com/explore/tags/fit/')
-        soup = BeautifulSoup(r.text, 'lxml')
+        tag = options['tag']
+        if tag:
+            tags = [tag]
+        else:
+            tags = Tag.objects.values_list('name', flat=True)
 
-        script = soup.find('script', text=lambda t: t.startswith('window._sharedData'))
-        page_json = script.text.split(' = ', 1)[1].rstrip(';')
-        data = json.loads(page_json)
+        for tag in tags:
+            if tag.startswith('#'):
+                tag = tag[1:]
+            url = f"https://www.instagram.com/explore/tags/{tag}/"
+            print(f"URL: {url}")
 
-        # for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
-        #     # image_src = post['node']['thumbnail_resources'][1]['src']
-        #     # print(image_src)
-        #     print('=' * 100)
-        #     print(json.dumps(post))
+            r = requests.get(url)
+            soup = BeautifulSoup(r.text, 'lxml')
 
-        for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
-            edges = post['node']['edge_media_to_caption']['edges']
-            if len(edges) <= 0:
-                continue
-            message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
-            print('=' * 100)
-            words = extract_words_from_message(message)
-            print('Words: %s' % words)
-            tags = list(filter(filter_tag, words))
-            print('Tags: %s' % tags)
+            script = soup.find('script', text=lambda t: t.startswith('window._sharedData'))
+            page_json = script.text.split(' = ', 1)[1].rstrip(';')
+            data = json.loads(page_json)
 
-            for tag in tags:
-                if Tag.objects.filter(name=tag).count() == 0:
-                    Tag.objects.create(name=tag)
+            # for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
+            #     # image_src = post['node']['thumbnail_resources'][1]['src']
+            #     # print(image_src)
+            #     print('=' * 100)
+            #     print(json.dumps(post))
+
+            for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
+                edges = post['node']['edge_media_to_caption']['edges']
+                if len(edges) <= 0:
+                    continue
+                message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
+                print('=' * 100)
+                words = extract_words_from_message(message)
+                print('Words: %s' % words)
+                tags = list(filter(filter_tag, words))
+                print('Tags: %s' % tags)
+
+                for tag_name in tags:
+                    try:
+                        if Tag.objects.filter(name=tag_name).count() == 0:
+                            Tag.objects.create(name=tag_name)
+                    except Exception as e:
+                        print(f"ERROR: {e.message}")
+                        print(f"TAG: {tag_name}")
 
 
 def extract_words_from_message(message):
