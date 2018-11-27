@@ -1,10 +1,10 @@
 import json
-import re
 
 import requests
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
+from instagram.helpers import filter_tag
 from instagram.models import Tag
 
 
@@ -12,7 +12,7 @@ class Command(BaseCommand):
     help = 'Extract tags from images'
 
     def handle(self, *args, **options):
-        r = requests.get('https://www.instagram.com/explore/tags/nature/')
+        r = requests.get('https://www.instagram.com/explore/tags/fit/')
         soup = BeautifulSoup(r.text, 'lxml')
 
         script = soup.find('script', text=lambda t: t.startswith('window._sharedData'))
@@ -60,12 +60,3 @@ def extract_words_from_message(message):
     result.extend(words_2_add)
 
     return result
-
-
-def filter_tag(word):
-    hashtag_re = re.compile("(?:^|\s)[＃#]{1}(\w+)")
-    if hashtag_re.match(word):
-        return True
-    else:
-        print(f"Inválido: {word}")
-        return False
