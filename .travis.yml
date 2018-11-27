@@ -1,0 +1,28 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - echo "$DOCKER_PASS" | docker login -u $DOCKER_USER --password-stdin
+
+install:
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH; fi`
+  - docker build -f Dockerfile -t $TRAVIS_REPO_SLUG:$TAG .
+
+script:
+  - make ci.test
+
+after_success:
+  - docker push $TRAVIS_REPO_SLUG
+
+deploy:
+  - provider: script
+    script: ./scripts/k8s-deploy-development.sh
+    on:
+      all_branches: true
+  - provider: script
+    script: ./scripts/k8s-deploy-production.sh
+    on:
+      all_branches: true
+      condition: ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} =~ ^release-.*$

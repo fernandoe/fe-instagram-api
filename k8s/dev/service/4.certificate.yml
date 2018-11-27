@@ -1,0 +1,17 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: api-instagram-dev-fernandoe-com
+spec:
+  secretName: api-instagram-dev-fernandoe-com-tls
+  issuerRef:
+    name: issuer-letsencrypt
+  commonName: api-instagram.dev.fernandoe.com
+  dnsNames:
+    - api-instagram.dev.fernandoe.com
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - api-instagram.dev.fernandoe.com

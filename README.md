@@ -1,1 +1,1 @@
-# instagram-tags
+# fe-instagram-api
