@@ -1,15 +1,6 @@
 import re
 
 
-def filter_tag(word):
-    hashtag_re = re.compile("(?:^|\s)[＃#]{1}(\w+)$")
-    if hashtag_re.match(word):
-        return True
-    else:
-        print(f"Inválido: {word}")
-        return False
-
-
 def save_tag(tag):
     from .models import Tag
     if tag is None or not tag.startswith('#'):
@@ -30,3 +21,42 @@ def extract_tag_count(tag, data):
     count = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['count']
     tag_object = Tag.objects.get(name=tag)
     TagCount.objects.create(tag=tag_object, count=count)
+
+
+def print_invalid_tag(func):
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if not result:
+            print(f"Invalid hashtag: {args[0]}")
+        return result
+
+    return wrapper
+
+
+HASHTAG_RE = re.compile("(?:^|\s)[＃#]{1}(\w+)$")
+ALLOWED_CHARS = '#abcdefghijklmnopqrstuvwxyzçãâáàäẽêéèëĩîíìïõôóòöũûúùüñ1234567890_-'
+
+
+def is_invalid_char(char):
+    return char not in ALLOWED_CHARS
+
+
+@print_invalid_tag
+def is_valid_tag(name):
+    if name is None:
+        return False
+
+    if len(name) > 100:
+        return False
+
+    if not name.startswith('#'):
+        return False
+
+    invalid_chars = sum([is_invalid_char(x) for x in name])
+    if invalid_chars > 0:
+        return False
+
+    if not HASHTAG_RE.match(name):
+        return False
+
+    return True

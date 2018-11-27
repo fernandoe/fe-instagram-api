@@ -26,5 +26,8 @@ compose-createsuperuser:
 compose-extract_tags:
 	docker-compose run --rm api-instagram python manage.py extract_tags
 
+compose-delete_invalid_tags:
+	docker-compose run --rm api-instagram python manage.py delete_invalid_tags
+
 compose-shell:
 	docker-compose run --rm api-instagram python manage.py shell

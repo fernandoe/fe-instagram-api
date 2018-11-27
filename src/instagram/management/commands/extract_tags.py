@@ -3,8 +3,9 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
+from django.db.models import Count
 
-from instagram.helpers import filter_tag, save_tag, extract_tag_count
+from instagram.helpers import save_tag, extract_tag_count, is_valid_tag
 from instagram.models import Tag
 
 
@@ -19,7 +20,12 @@ class Command(BaseCommand):
         if tag:
             tags = [tag]
         else:
-            tags = Tag.objects.values_list('name', flat=True)
+            # tags = Tag.objects.values_list('name', flat=True)
+            tags = []
+            tags_objects = Tag.objects.annotate(number_of_counts=Count('tagcount'))
+            for tag_object in tags_objects:
+                if tag_object.number_of_counts > 0:
+                    tags.append(tag_object.name)
 
         for tag in tags:
             if tag.startswith('#'):
@@ -35,11 +41,6 @@ class Command(BaseCommand):
             data = json.loads(page_json)
 
             extract_tag_count(tag, data)
-            # for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
-            #     # image_src = post['node']['thumbnail_resources'][1]['src']
-            #     # print(image_src)
-            #     print('=' * 100)
-            #     print(json.dumps(post))
 
             for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
                 edges = post['node']['edge_media_to_caption']['edges']
@@ -49,8 +50,8 @@ class Command(BaseCommand):
                 print('=' * 100)
                 words = extract_words_from_message(message)
                 print('Words: %s' % words)
-                tags = list(filter(filter_tag, words))
-                print('Tags: %s' % tags)
+                tags = list(filter(is_valid_tag, words))
+                print('Valid Tags: %s' % tags)
 
                 for tag_name in tags:
                     save_tag(tag_name)
@@ -75,3 +76,10 @@ def extract_words_from_message(message):
     result.extend(words_2_add)
 
     return result
+
+# from django.db.models import Count
+# from instagram.models import Tag, TagCount
+# tags = Tag.objects.annotate(number_of_counts=Count('tagcount'))
+# for tag in tags:
+#     if tag.number_of_counts > 0:
+#         print(tag)
