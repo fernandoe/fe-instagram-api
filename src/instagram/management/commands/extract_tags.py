@@ -24,7 +24,7 @@ class Command(BaseCommand):
             tags = []
             tags_objects = Tag.objects.annotate(number_of_counts=Count('tagcount'))
             for tag_object in tags_objects:
-                if tag_object.number_of_counts > 0:
+                if tag_object.number_of_counts == 0:
                     tags.append(tag_object.name)
 
         for tag in tags:
@@ -34,6 +34,10 @@ class Command(BaseCommand):
             print(f"URL: {url}")
 
             r = requests.get(url)
+            if r.status_code != 200:
+                print(f"STATUS CODE: {r.status_code}")
+                print(f"TEXT: {r.text}")
+
             soup = BeautifulSoup(r.text, 'lxml')
 
             script = soup.find('script', text=lambda t: t.startswith('window._sharedData'))

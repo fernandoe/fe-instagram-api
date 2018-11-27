@@ -12,6 +12,6 @@ class TagModelAdmin(admin.ModelAdmin):
 
 @admin.register(TagCount)
 class TagCountModelAdmin(admin.ModelAdmin):
-    search_fields = ('uuid', 'tag')
+    search_fields = ('uuid', 'tag__name')
     list_display = ('get_uuid', 'tag', 'count')
     ordering = ('tag',)
