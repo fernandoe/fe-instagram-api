@@ -16,8 +16,8 @@ fi
 sed -ie 's/0.0.1/'"${TAG}"'/g' k8s/dev/service/2.deployment.yml
 
 # Change domain name
-sed -ie 's/api-instagram\.dev\.fernandoe\.com/'"${NAMESPACE}"'.dev.fernandoe.com/g' k8s/dev/service/4.certificate.yml
-sed -ie 's/api-instagram\.dev\.fernandoe\.com/'"${NAMESPACE}"'.dev.fernandoe.com/g' k8s/dev/service/5.ingress.yml
+sed -ie 's/api-instagram\.dev\.codigoaberto\.io/'"${NAMESPACE}"'.dev.codigoaberto.io/g' k8s/dev/service/4.certificate.yml
+sed -ie 's/api-instagram\.dev\.codigoaberto\.io/'"${NAMESPACE}"'.dev.codigoaberto.io/g' k8s/dev/service/5.ingress.yml
 
 ./kubectl apply --recursive -f ./k8s/dev/ -n ${NAMESPACE}
 
