@@ -8,21 +8,14 @@ ci.test:
 	true
 #	docker run --rm -it '${TRAVIS_REPO_SLUG}:${TAG}' pytest -s
 
+compose-up:
+	docker-compose up api-instagram
 
-#requirements:
-#	docker run --rm '${TRAVIS_REPO_SLUG}:${TAG}' pip freeze -r /requirements.txt
-#
-#test:
-#	cd src; pytest
-#
-#ci.test:
-#	docker run --rm \
-#		-e TRAVIS_JOB_ID='${TRAVIS_JOB_ID}' \
-#		-e TRAVIS_BRANCH='${TRAVIS_BRANCH}' \
-#		-e COVERALLS_REPO_TOKEN='${COVERALLS_REPO_TOKEN}' \
-#		-e CODECOV_ENV='${CODECOV_ENV}' \
-#		-e TRAVIS_COMMIT='${TRAVIS_COMMIT}' \
-#		-e TRAVIS='${TRAVIS}' \
-#		-it '${TRAVIS_REPO_SLUG}:${TAG}' /bin/sh -c "env; pytest -s; coveralls --verbose;"
+compose-migrate:
+	docker-compose run --rm api-instagram python manage.py migrate
 
+compose-createsuperuser:
+	docker-compose run --rm api-instagram python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin@example.com', 'password')"
 
+compose-extract_tags:
+	docker-compose run --rm api-instagram python manage.py extract_tags

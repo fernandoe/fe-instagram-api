@@ -16,3 +16,6 @@ class TestFilterTag(TestCase):
 
     def test_invalid_word(self):
         assert not filter_tag('#incredibleindia🇮🇳')
+
+    def test_invalid_chinese(self):
+        assert filter_tag('#筋トレ')
