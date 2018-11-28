@@ -60,20 +60,6 @@ def process_posts_in(field, data, tags):
             Post.objects.create(shortcode=shortcode, tags=tags_in_str)
         tags |= tags_in_message
 
-    # for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
-    #     edges = post['node']['edge_media_to_caption']['edges']
-    #     if len(edges) <= 0:
-    #         continue
-    #     message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
-    #     print('=' * 100)
-    #     words = extract_words_from_message(message)
-    #     print('Words: %s' % words)
-    #     tags = list(filter(is_valid_tag, words))
-    #     print('Valid Tags: %s' % tags)
-    #
-    #     for tag_name in tags:
-    #         save_tag(tag_name)
-
 
 def extract_words_from_message(message):
     result = []

@@ -21,11 +21,8 @@ def save_tag(tag):
 
 
 def extract_tag_count(tag, data):
-    # from .models import Tag, TagCount
     count = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['count']
     return count
-    # tag_object = Tag.objects.get(name=tag)
-    # TagCount.objects.create(tag=tag_object, count=count)
 
 
 def print_invalid_tag(func):
