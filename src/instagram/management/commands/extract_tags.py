@@ -1,12 +1,8 @@
-import json
-
-import requests
-from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 
-from instagram.helpers import save_tag, extract_tag_count, is_valid_tag, extract_shortcode
-from instagram.models import Tag
+from instagram.helpers import save_tag, extract_tag_count, is_valid_tag, get_instagram_data
+from instagram.models import Tag, Post, TagCount
 
 
 class Command(BaseCommand):
@@ -27,39 +23,56 @@ class Command(BaseCommand):
                 if tag_object.number_of_counts == 0:
                     tags.append(tag_object.name)
 
+        unique_hashtags_from_instagram_page = set()
         for tag in tags:
-            if tag.startswith('#'):
-                tag = tag[1:]
-            url = f"https://www.instagram.com/explore/tags/{tag}/"
-            print(f"URL: {url}")
+            try:
+                data = get_instagram_data(tag)
+            except:
+                continue
+            tag_count = extract_tag_count(tag, data)
+            process_posts_in('edge_hashtag_to_media', data, unique_hashtags_from_instagram_page)
+            process_posts_in('edge_hashtag_to_top_posts', data, unique_hashtags_from_instagram_page)
+            try:
+                tag_object = Tag.objects.get(name=tag)
+            except Tag.DoesNotExist:
+                tag_object = Tag.objects.create(name=tag)
+            TagCount.objects.create(tag=tag_object, count=tag_count)
 
-            r = requests.get(url)
-            if r.status_code != 200:
-                print(f"STATUS CODE: {r.status_code}")
-                print(f"TEXT: {r.text}")
+        for tag in unique_hashtags_from_instagram_page:
+            save_tag(tag)
 
-            soup = BeautifulSoup(r.text, 'lxml')
 
-            script = soup.find('script', text=lambda t: t.startswith('window._sharedData'))
-            page_json = script.text.split(' = ', 1)[1].rstrip(';')
-            data = json.loads(page_json)
+def process_posts_in(field, data, tags):
+    for post in data['entry_data']['TagPage'][0]['graphql']['hashtag'][field]['edges']:
+        if len(post['node']['edge_media_to_caption']['edges']) == 0:
+            continue
+        message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
+        shortcode = post['node']['shortcode']
 
-            extract_tag_count(tag, data)
-            shortcode = extract_shortcode(data)
+        print(f"Message: {message}")
+        words = extract_words_from_message(message)
+        tags_in_message = set(filter(is_valid_tag, words))
+        print('Valid Tags: %s' % tags_in_message)
+        try:
+            Post.objects.get(shortcode=shortcode)
+        except Post.DoesNotExist:
+            tags_in_str = ' '.join([e[1:] for e in tags_in_message])
+            Post.objects.create(shortcode=shortcode, tags=tags_in_str)
+        tags |= tags_in_message
 
-            for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
-                edges = post['node']['edge_media_to_caption']['edges']
-                if len(edges) <= 0:
-                    continue
-                message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
-                print('=' * 100)
-                words = extract_words_from_message(message)
-                print('Words: %s' % words)
-                tags = list(filter(is_valid_tag, words))
-                print('Valid Tags: %s' % tags)
-
-                for tag_name in tags:
-                    save_tag(tag_name)
+    # for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
+    #     edges = post['node']['edge_media_to_caption']['edges']
+    #     if len(edges) <= 0:
+    #         continue
+    #     message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
+    #     print('=' * 100)
+    #     words = extract_words_from_message(message)
+    #     print('Words: %s' % words)
+    #     tags = list(filter(is_valid_tag, words))
+    #     print('Valid Tags: %s' % tags)
+    #
+    #     for tag_name in tags:
+    #         save_tag(tag_name)
 
 
 def extract_words_from_message(message):

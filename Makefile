@@ -9,7 +9,7 @@ ci.test:
 #	docker run --rm -it '${TRAVIS_REPO_SLUG}:${TAG}' pytest -s
 
 compose-build:
-	docker-compose build --build-arg http_proxy=http://15.85.195.199:8088 --build-arg https_proxy=http://15.85.195.199:8088 api-instagram
+	docker-compose build api-instagram
 
 compose-up:
 	docker-compose up api-instagram

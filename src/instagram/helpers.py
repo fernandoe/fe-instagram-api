@@ -1,4 +1,8 @@
+import json
 import re
+
+import requests
+from bs4 import BeautifulSoup
 
 
 def save_tag(tag):
@@ -17,23 +21,11 @@ def save_tag(tag):
 
 
 def extract_tag_count(tag, data):
-    from .models import Tag, TagCount
+    # from .models import Tag, TagCount
     count = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['count']
-    tag_object = Tag.objects.get(name=tag)
-    TagCount.objects.create(tag=tag_object, count=count)
-
-
-def extract_shortcode(data):
-    # shortcode = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_top_posts']['edges'][0]['count']
-    shortcode = ''
-    return shortcode
-
-
-# for post in data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['edges']:
-#     edges = post['node']['edge_media_to_caption']['edges']
-#     if len(edges) <= 0:
-#         continue
-#     message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
+    return count
+    # tag_object = Tag.objects.get(name=tag)
+    # TagCount.objects.create(tag=tag_object, count=count)
 
 
 def print_invalid_tag(func):
@@ -73,3 +65,22 @@ def is_valid_tag(name):
         return False
 
     return True
+
+
+def get_instagram_data(tag):
+    if tag.startswith('#'):
+        tag = tag[1:]
+
+    url = f"https://www.instagram.com/explore/tags/{tag}/"
+    print(f"URL: {url}")
+
+    r = requests.get(url)
+    if r.status_code != 200:
+        print(f"STATUS CODE: {r.status_code}")
+        print(f"TEXT: {r.text}")
+
+    soup = BeautifulSoup(r.text, 'lxml')
+
+    script = soup.find('script', text=lambda t: t.startswith('window._sharedData'))
+    page_json = script.text.split(' = ', 1)[1].rstrip(';')
+    return json.loads(page_json)
