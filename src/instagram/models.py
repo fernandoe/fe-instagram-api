@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from fe_core.models import UUIDModel
 
 User = get_user_model()
@@ -7,6 +9,7 @@ User = get_user_model()
 
 class Tag(UUIDModel):
     name = models.CharField(max_length=100, unique=True)
+    last_count = models.IntegerField(null=True)
     languages = models.CharField(max_length=100, null=True)
 
     def __str__(self):
@@ -22,6 +25,12 @@ class TagCount(UUIDModel):
 
     def __str__(self):
         return f"{self.tag} => {self.count}"
+
+
+@receiver(post_save, sender=TagCount)
+def update_tag_last_count(sender, instance, created, raw, using, **kwargs):
+    if created:
+        Tag.objects.filter(uuid=instance.tag.uuid).update(last_count=instance.count)
 
 
 class Post(UUIDModel):
