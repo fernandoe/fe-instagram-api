@@ -7,6 +7,7 @@ User = get_user_model()
 
 class Tag(UUIDModel):
     name = models.CharField(max_length=100, unique=True)
+    languages = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return self.name

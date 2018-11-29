@@ -5,8 +5,8 @@ from .models import Tag, TagCount, Post
 
 @admin.register(Tag)
 class TagModelAdmin(admin.ModelAdmin):
-    search_fields = ('uuid', 'name')
-    list_display = ('get_uuid', 'name')
+    search_fields = ('uuid', 'name', 'languages')
+    list_display = ('get_uuid', 'name', 'languages')
     ordering = ('name',)
 
 

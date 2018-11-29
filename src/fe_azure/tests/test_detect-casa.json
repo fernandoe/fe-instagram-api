@@ -1,0 +1,20 @@
+{
+  "alternatives": [
+    {
+      "isTranslationSupported": true,
+      "isTransliterationSupported": false,
+      "language": "es",
+      "score": 1.0
+    },
+    {
+      "isTranslationSupported": true,
+      "isTransliterationSupported": false,
+      "language": "pt",
+      "score": 1.0
+    }
+  ],
+  "isTranslationSupported": true,
+  "isTransliterationSupported": false,
+  "language": "it",
+  "score": 1.0
+}
