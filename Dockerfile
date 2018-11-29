@@ -3,7 +3,8 @@ LABEL maintainer="Fernando Espíndola <fer.esp@gmail.com>"
 
 RUN apk add --no-cache \
         libxml2-dev \
-        libxslt-dev
+        libxslt-dev \
+        libffi-dev
 
 COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
