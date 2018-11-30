@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.urls import path
 
-from .views import tag_priority
+from .views import tag_priority, tags
 
 urlpatterns = [
     path('tag-priority/', tag_priority),
+    path('tags/', tags),
 ]
