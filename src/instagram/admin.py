@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Tag, TagCount, Post
+from .models import Tag, TagCount, Post, TagPriority
 
 
 @admin.register(Tag)
@@ -22,3 +22,10 @@ class PostModelAdmin(admin.ModelAdmin):
     search_fields = ('uuid', 'shortcode', 'tags')
     list_display = ('get_uuid', 'shortcode', 'tags')
     ordering = ('shortcode',)
+
+
+@admin.register(TagPriority)
+class TagPriorityModelAdmin(admin.ModelAdmin):
+    search_fields = ('uuid', 'tag_name')
+    list_display = ('get_uuid', 'tag')
+    ordering = ('tag__name',)
