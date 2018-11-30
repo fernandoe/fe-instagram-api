@@ -30,4 +30,4 @@ compose-delete_invalid_tags:
 	docker-compose run --rm api-instagram python manage.py delete_invalid_tags
 
 compose-shell:
-	docker-compose run --rm api-instagram python manage.py shell
+	docker-compose run --rm api-instagram sh

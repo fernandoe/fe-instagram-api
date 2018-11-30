@@ -4,6 +4,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from fe_core.models import UUIDModel
 
+from instagram.search import Hashtags
+
 User = get_user_model()
 
 
@@ -36,3 +38,32 @@ def update_tag_last_count(sender, instance, created, raw, using, **kwargs):
 class Post(UUIDModel):
     shortcode = models.CharField(max_length=100, unique=True)
     tags = models.TextField()
+
+    def indexing(self):
+        print('indexing...')
+        obj = Hashtags(
+            meta={'uuid': self.uuid},
+            tags=self.tags,
+            created_at=self.created_at
+        )
+        obj.save()
+        return obj.to_dict(include_meta=True)
+
+
+# class Hashtags(Document):
+#     tags = Keyword()
+#     created_at = Date()
+#
+#     class Index:
+#         name = 'tags'
+#
+#     class Meta:
+#         index = 'hashtags-index'
+#
+# Hashtags.init()
+#
+#
+# # # create and save and article
+# hahstag = Hashtags(meta={'uuid': 42}, tags=['test'])
+# hahstag.created_at = datetime.now()
+# hahstag.save()

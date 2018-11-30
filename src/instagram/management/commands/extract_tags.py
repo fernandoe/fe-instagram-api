@@ -87,3 +87,10 @@ def extract_words_from_message(message):
 # for tag in tags:
 #     if tag.number_of_counts > 0:
 #         print(tag)
+
+# from instagram.models import Tag, TagCount
+# tags = TagCount.objects.all()
+# for tag in tags:
+#     tag.tag.last_count = tag.count
+#     tag.tag.save()
+#
