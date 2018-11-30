@@ -18,11 +18,13 @@ def tag_priority(request):
 
 def tags(request):
     hashtags = request.GET.get('tags', '').split(' ')
-    tags = Tag.objects.filter(name__in=hashtags, last_count__isnull=False).order_by('-last_count')
+    limit = request.GET.get('limit', '30')
+    tags = Tag.objects.filter(name__in=hashtags, last_count__isnull=False).order_by('-last_count')[:int(limit)]
     result = ''
     result_count = ''
-    if tags.count() > 0:
+    count = tags.count()
+    if count > 0:
         for tag in tags:
             result += f"#{tag.name} "
             result_count += f"#{tag.last_count} "
-    return HttpResponse(result + '\n' + result_count, status=200)
+    return HttpResponse(result + '\n' + result_count + '\nResults: ' + str(count), status=200)
