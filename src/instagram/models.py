@@ -50,6 +50,9 @@ class Post(UUIDModel):
         return obj.to_dict(include_meta=True)
 
 
+class TagPriority(UUIDModel):
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
 # class Hashtags(Document):
 #     tags = Keyword()
 #     created_at = Date()
