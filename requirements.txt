@@ -102,11 +102,12 @@ azure-storage-common==1.4.0
 azure-storage-file==1.4.0
 azure-storage-queue==1.4.0
 backcall==0.1.0
-certifi==2018.10.15
+certifi==2018.11.29
 cffi==1.11.5
 chardet==3.0.4
 cryptography==2.4.2
 decorator==4.3.0
+elasticsearch==6.3.1
 Faker==1.0.0
 idna==2.7
 ipython-genutils==0.2.0
@@ -133,5 +134,5 @@ requests-oauthlib==1.0.0
 six==1.11.0
 text-unidecode==1.2
 traitlets==4.3.2
-urllib3==1.24
+urllib3==1.24.1
 wcwidth==0.1.7

@@ -1,22 +1,10 @@
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
-from elasticsearch_dsl import DocType, Text, Date, Keyword
-from elasticsearch_dsl.connections import connections
-
-from . import models
-
-connections.create_connection(hosts=['elasticsearch'])
+from elasticsearch_dsl import Document, Text, Keyword, Date
 
 
-class Hashtags(DocType):
-    tags = Keyword()
+class PostIndex(Document):
+    uuid = Text()
+    tags = Keyword(multi=True)
     created_at = Date()
 
-    class Meta:
-        index = 'hashtags-index'
-
-
-# def bulk_indexing():
-#     HashtagsIndex.init()
-#     es = Elasticsearch()
-#     bulk(client=es, actions=(b.indexing() for b in models.Post.objects.all().iterator()))
+    class Index:
+        name = 'post-index'

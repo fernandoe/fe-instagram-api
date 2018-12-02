@@ -4,8 +4,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from fe_core.models import UUIDModel
 
-from instagram.search import Hashtags
-
 User = get_user_model()
 
 
@@ -40,9 +38,10 @@ class Post(UUIDModel):
     tags = models.TextField()
 
     def indexing(self):
+        from instagram.search import PostIndex
         print('indexing...')
-        obj = Hashtags(
-            meta={'uuid': self.uuid},
+        obj = PostIndex(
+            uuid=self.uuid,
             tags=self.tags,
             created_at=self.created_at
         )
@@ -52,21 +51,3 @@ class Post(UUIDModel):
 
 class TagPriority(UUIDModel):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-
-# class Hashtags(Document):
-#     tags = Keyword()
-#     created_at = Date()
-#
-#     class Index:
-#         name = 'tags'
-#
-#     class Meta:
-#         index = 'hashtags-index'
-#
-# Hashtags.init()
-#
-#
-# # # create and save and article
-# hahstag = Hashtags(meta={'uuid': 42}, tags=['test'])
-# hahstag.created_at = datetime.now()
-# hahstag.save()
