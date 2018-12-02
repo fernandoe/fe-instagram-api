@@ -40,9 +40,12 @@ class Post(UUIDModel):
     def indexing(self):
         from instagram.search import PostIndex
         print('indexing...')
+        tags = []
+        if len(self.tags) > 0:
+            tags = self.tags.split(' ')
         obj = PostIndex(
             uuid=self.uuid,
-            tags=self.tags,
+            tags=tags,
             created_at=self.created_at
         )
         obj.save()
