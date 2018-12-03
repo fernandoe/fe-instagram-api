@@ -25,7 +25,7 @@ def tag_priority(request):
 def tags(request):
     tag = request.GET.get('tag')
     s = Search(index="post-index").query("match", tags=tag)
-    s.aggs.bucket('wordcloud', 'terms', field='tags')
+    s.aggs.bucket('wordcloud', 'terms', field='tags', size=35)
     response = s.execute()
     for hit in response:
         print(hit)
