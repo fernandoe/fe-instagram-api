@@ -55,3 +55,9 @@ class Post(UUIDModel):
 
 class TagPriority(UUIDModel):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+
+class TextSearch(UUIDModel):
+    text = models.CharField(max_length=100)
+    result = models.TextField()
+    ingest_at = models.DateTimeField(null=True)

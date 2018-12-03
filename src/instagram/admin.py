@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Tag, TagCount, Post, TagPriority
+from .models import Tag, TagCount, Post, TagPriority, TextSearch
 
 
 @admin.register(Tag)
@@ -47,3 +47,27 @@ class TagPriorityModelAdmin(admin.ModelAdmin):
     search_fields = ('uuid', 'tag_name')
     list_display = ('get_uuid', 'tag')
     ordering = ('tag__name',)
+
+
+class IngestAtFilter(admin.SimpleListFilter):
+    title = 'Ingest At'
+    parameter_name = 'ingest_at__isnull'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('False', 'has ingested'),
+            ('True', 'has no ingested'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'False':
+            return queryset.filter(ingest_at__isnull=False)
+        if self.value() == 'True':
+            return queryset.filter(ingest_at__isnull=True)
+
+
+@admin.register(TextSearch)
+class TextSearchModelAdmin(admin.ModelAdmin):
+    list_filter = (IngestAtFilter,)
+    search_fields = ('uuid', 'text')
+    list_display = ('get_uuid', 'text', 'result', 'ingest_at')

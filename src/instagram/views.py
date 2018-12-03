@@ -1,11 +1,12 @@
 import os
-
+import json
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.connections import connections
 
-from instagram.models import Tag, TagPriority
+from instagram.models import Tag, TagPriority, TextSearch
 
 connections.create_connection(hosts=[os.getenv('FE_ELASTICSEARCH_HOST')])
 
@@ -42,15 +43,24 @@ def tags(request):
     r = ' '.join(result) + '\n' + ' '.join(result_count) + '\n' + ' '.join(index) + '\nResults: ' + str(len(result))
     return HttpResponse(r, status=200)
 
-# def tags(request):
-#     hashtags = request.GET.get('tags', '').split(' ')
-#     limit = request.GET.get('limit', '30')
-#     tags = Tag.objects.filter(name__in=hashtags, last_count__isnull=False).order_by('-last_count')[:int(limit)]
-#     result = ''
-#     result_count = ''
-#     count = tags.count()
-#     if count > 0:
-#         for tag in tags:
-#             result += f"#{tag.name} "
-#             result_count += f"#{tag.last_count} "
-#     return HttpResponse(result + '\n' + result_count + '\nResults: ' + str(count), status=200)
+
+def search(request):
+    q = request.GET.get('q')
+    limit = request.GET.get('limit')
+    s = Search(index="post-index").query("match", tags=q)
+    s.aggs.bucket('wordcloud', 'terms', field='tags', size=int(limit))
+    response = s.execute()
+    for hit in response:
+        print(hit)
+    result = {
+        'items': []
+    }
+    for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
+        print(f"{idx}: {tag}")
+        result['items'].append({
+            'name': tag.key,
+            'count': tag.doc_count,
+            'index': idx + 1
+        })
+    TextSearch.objects.create(text=q, result=json.dumps(result))
+    return JsonResponse(result)
