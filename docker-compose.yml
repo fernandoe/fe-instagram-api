@@ -44,6 +44,7 @@ services:
       DJANGO_SETTINGS_MODULE: 'server.settings.docker'
       DATABASE_URL: mysql://root:password@mysql:3306/instagram
       FE_AZURE_TRANSLATOR_KEY: '2084ddd8ecf545afb49c15c6287bc7a0'
+      FE_ELASTICSEARCH_HOST: 'elasticsearch'
     stdin_open: true
     tty: true
 

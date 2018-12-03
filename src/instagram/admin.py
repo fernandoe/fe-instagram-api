@@ -20,7 +20,7 @@ class TagCountModelAdmin(admin.ModelAdmin):
 @admin.register(Post)
 class PostModelAdmin(admin.ModelAdmin):
     search_fields = ('uuid', 'shortcode', 'tags')
-    list_display = ('get_uuid', 'shortcode', 'tags')
+    list_display = ('get_uuid', 'shortcode', 'injest_at', 'tags')
     ordering = ('shortcode',)
 
 

@@ -36,6 +36,7 @@ def update_tag_last_count(sender, instance, created, raw, using, **kwargs):
 class Post(UUIDModel):
     shortcode = models.CharField(max_length=100, unique=True)
     tags = models.TextField()
+    injest_at = models.DateTimeField(null=True)
 
     def indexing(self):
         from instagram.search import PostIndex

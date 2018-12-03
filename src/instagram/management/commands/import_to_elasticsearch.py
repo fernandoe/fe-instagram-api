@@ -1,4 +1,9 @@
+import datetime
+import os
+import time
+
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from elasticsearch_dsl.connections import connections
 
 from instagram.models import Post
@@ -8,11 +13,19 @@ from instagram.search import PostIndex
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        connections.create_connection(hosts=['elasticsearch'])
+        while True:
+            elasticsearch_host = os.getenv('FE_ELASTICSEARCH_HOST')
+            connections.create_connection(hosts=[elasticsearch_host])
 
-        PostIndex.init()
+            PostIndex.init()
 
-        posts = Post.objects.all()
-        for post in posts:
-            print(f"Processing: {post}")
-            post.indexing()
+            posts = Post.objects.filter(injest_at__isnull=True)
+            for post in posts:
+                print(f"Processing: {post}")
+                post.indexing()
+                post.injest_at = datetime.datetime.now(tz=timezone.utc)
+                post.save()
+
+            print('Sleep for 10 seconds...')
+            time.sleep(15)
+            print('Continue after sleep...')
