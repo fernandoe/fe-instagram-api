@@ -26,11 +26,9 @@
 #         settings = {
 #           "number_of_shards": 2,
 #         }
-#
 #     def save(self, ** kwargs):
 #         self.lines = len(self.body.split())
 #         return super(Article, self).save(** kwargs)
-#
 #     def is_published(self):
 #         return datetime.now() >= self.published_from
 # ----------------------------------------------------------------------------------------------------------------------
@@ -40,4 +38,39 @@
 # pi = PostIndex()
 # pi.init()
 # ----------------------------------------------------------------------------------------------------------------------
+from elasticsearch_dsl import Search
+from elasticsearch_dsl.connections import connections
+connections.create_connection(hosts=['elasticsearch'])
+# client = Elasticsearch()
+s = Search(index="post-index") \
+    .query("match", tags="banana")
+# response = s.execute()
+# response
+s.aggs.bucket('wordcloud', 'terms', field='tags')
+# \
+    # .metric('max_lines', 'max', field='lines')
+response = s.execute()
+for hit in response:
+    print(hit)
+    # print(hit.meta.score, hit.title)
+
+for tag in response.aggregations.per_tag.buckets:
+    print(tag)
 # ----------------------------------------------------------------------------------------------------------------------
+
+# GET post-index/_search
+# {
+#   "query": {
+#     "match": {
+#       "tags": "banana"
+#     }
+#   },
+#   "aggs": {
+#     "wordcloud": {
+#       "terms": {
+#         "field": "tags",
+#         "size": 100
+#       }
+#     }
+#   }
+# }
