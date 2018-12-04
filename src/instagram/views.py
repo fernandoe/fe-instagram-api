@@ -45,22 +45,29 @@ def tags(request):
 
 
 def search(request):
-    q = request.GET.get('q')
-    limit = request.GET.get('limit')
-    s = Search(index="post-index").query("match", tags=q)
-    s.aggs.bucket('wordcloud', 'terms', field='tags', size=int(limit))
-    response = s.execute()
-    for hit in response:
-        print(hit)
+    q = request.GET.get('q', None)
+    limit = request.GET.get('limit', '30')
+    try:
+        limit = int(limit)
+    except ValueError:
+        limit = 30
+
     result = {
         'items': []
     }
-    for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
-        print(f"{idx}: {tag}")
-        result['items'].append({
-            'name': tag.key,
-            'count': tag.doc_count,
-            'index': idx + 1
-        })
-    TextSearch.objects.create(text=q, result=json.dumps(result))
+
+    if q:
+        s = Search(index="post-index").query("match", tags=q)
+        s.aggs.bucket('wordcloud', 'terms', field='tags', size=limit)
+        response = s.execute()
+        for hit in response:
+            print(hit)
+        for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
+            print(f"{idx}: {tag}")
+            result['items'].append({
+                'name': tag.key,
+                'count': tag.doc_count,
+                'index': idx + 1
+            })
+        TextSearch.objects.create(text=q, result=json.dumps(result))
     return JsonResponse(result)

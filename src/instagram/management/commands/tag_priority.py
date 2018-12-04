@@ -22,6 +22,5 @@ class Command(BaseCommand):
                 tag_priority.delete()
 
             print('Sleep for 10 seconds...')
-            time.sleep(15)
+            time.sleep(3)
             print('Continue after sleep...')
-

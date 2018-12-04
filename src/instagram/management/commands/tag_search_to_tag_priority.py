@@ -1,7 +1,9 @@
+import datetime
 import json
 import time
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from instagram.models import TagPriority, TextSearch, Tag
 
@@ -12,6 +14,8 @@ class Command(BaseCommand):
         while True:
             texts_search = TextSearch.objects.filter(ingest_at__isnull=True)
             for ts in texts_search:
+                ts.ingest_at = datetime.datetime.now(tz=timezone.utc)
+                ts.save()
                 tags = ts.text.split()
                 for tag in tags:
                     try:
