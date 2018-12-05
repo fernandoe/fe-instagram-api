@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.connections import connections
 
+from fe_azure.queue import send_tag
 from instagram.models import Tag, TagPriority, TextSearch
 
 connections.create_connection(hosts=[os.getenv('FE_ELASTICSEARCH_HOST')])
@@ -64,6 +65,7 @@ def search(request):
             print(hit)
         for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
             print(f"{idx}: {tag}")
+            send_tag(tag.key)
             result['items'].append({
                 'name': tag.key,
                 'count': tag.doc_count,
