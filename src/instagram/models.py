@@ -1,8 +1,12 @@
+import json
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from fe_core.models import UUIDModel
+
+from fe_azure.queue import send_to_job_extract_hashtags_from_text_search
 
 User = get_user_model()
 
@@ -61,3 +65,16 @@ class TextSearch(UUIDModel):
     text = models.CharField(max_length=100)
     result = models.TextField()
     ingest_at = models.DateTimeField(null=True)
+
+    def get_hashtags_from_result(self):
+        result = []
+        items = json.loads(self.result)['items']
+        for item in items:
+            result.append(item['name'])
+        return result
+
+
+@receiver(post_save, sender=TextSearch)
+def post_save_text_search(sender, instance, created, raw, using, **kwargs):
+    if created:
+        send_to_job_extract_hashtags_from_text_search(str(instance.uuid))

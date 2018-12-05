@@ -1,7 +1,6 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from elasticsearch_dsl import Document, Percolator, Text, Keyword, \
-    connections, Q, Search, Date, Keyword, Text
+from elasticsearch_dsl import Document, Date, Keyword, Text
 from elasticsearch_dsl.connections import connections
 
 from . import models
@@ -25,7 +24,6 @@ def bulk_indexing():
     PostIndex.init()
     es = Elasticsearch()
     bulk(client=es, actions=(b.indexing() for b in models.Post.objects.all().iterator()))
-
 
 # def bulk_indexing():
 #     BlogPostIndex.init()

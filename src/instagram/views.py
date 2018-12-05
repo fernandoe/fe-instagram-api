@@ -5,8 +5,6 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.connections import connections
-
-from fe_azure.queue import send_tag, send_text_search
 from instagram.models import Tag, TagPriority, TextSearch
 
 connections.create_connection(hosts=[os.getenv('FE_ELASTICSEARCH_HOST')])
@@ -67,14 +65,23 @@ def search_impl(q, limit):
         response = s.execute()
         for hit in response:
             print(hit)
+
+        # get tags in our database
+        tag_list = []
+        for tag in response.aggregations.wordcloud.buckets:
+            tag_list.append(tag.key)
+
+        tags_in_database = {}
+        for tag in Tag.objects.filter(name__in=tag_list):
+            tags_in_database[tag] = tag.last_count
+
         for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
             print(f"{idx}: {tag}")
-            send_tag(tag.key)
             result['items'].append({
                 'name': tag.key,
-                'count': tag.doc_count,
+                'count': tags_in_database[tag.key] if tag.key in tags_in_database else None,
+                'doc_count': tag.doc_count,
                 'index': idx + 1
             })
-        ts = TextSearch.objects.create(text=q, result=json.dumps(result))
-        send_text_search(str(ts.uuid))
+        TextSearch.objects.create(text=q, result=json.dumps(result))
     return JsonResponse(result)
