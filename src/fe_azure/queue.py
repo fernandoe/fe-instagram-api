@@ -7,6 +7,7 @@ from instagram.models import Tag
 
 HASHTAGS_QUEUE_NAME = 'hashtags'
 POSTS_QUEUE_NAME = 'posts'
+QUEUE_JOB_TEXT_SEARCH = 'job-text-search'
 
 service_namespace = os.getenv('FE_AZURE_SERVICE_NAMESPACE')
 shared_access_posts_key_name = os.getenv('FE_AZURE_SHARED_ACCESS_POSTS_KEY_NAME')
@@ -22,6 +23,15 @@ post_service = ServiceBusService(service_namespace=service_namespace,
 hashtag_service = ServiceBusService(service_namespace=service_namespace,
                                     shared_access_key_name=shared_access_hashtags_key_name,
                                     shared_access_key_value=shared_access_hashtags_key_value)
+
+general_service = ServiceBusService(service_namespace='',
+                                    shared_access_key_name='',
+                                    shared_access_key_value='')
+
+
+def send_text_search(uuid):
+    message = Message(uuid)
+    general_service.send_queue_message(QUEUE_JOB_TEXT_SEARCH, message)
 
 
 def send_tag(name):

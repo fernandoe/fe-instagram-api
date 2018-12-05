@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.connections import connections
 
-from fe_azure.queue import send_tag
+from fe_azure.queue import send_tag, send_text_search
 from instagram.models import Tag, TagPriority, TextSearch
 
 connections.create_connection(hosts=[os.getenv('FE_ELASTICSEARCH_HOST')])
@@ -48,6 +48,10 @@ def tags(request):
 def search(request):
     q = request.GET.get('q', None)
     limit = request.GET.get('limit', '30')
+    return search_impl(q, limit)
+
+
+def search_impl(q, limit):
     try:
         limit = int(limit)
     except ValueError:
@@ -71,5 +75,6 @@ def search(request):
                 'count': tag.doc_count,
                 'index': idx + 1
             })
-        TextSearch.objects.create(text=q, result=json.dumps(result))
+        ts = TextSearch.objects.create(text=q, result=json.dumps(result))
+        send_text_search(str(ts.uuid))
     return JsonResponse(result)
