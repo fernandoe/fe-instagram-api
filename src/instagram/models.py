@@ -76,5 +76,6 @@ class TextSearch(UUIDModel):
 
 @receiver(post_save, sender=TextSearch)
 def post_save_text_search(sender, instance, created, raw, using, **kwargs):
-    if created:
+    print(f'=> post_save_text_search(instance={instance}, created={created})')
+    if created is True:
         send_to_job_extract_hashtags_from_text_search(str(instance.uuid))
