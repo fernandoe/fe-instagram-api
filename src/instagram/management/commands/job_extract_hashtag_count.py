@@ -1,5 +1,6 @@
 import time
 
+import django.db
 from azure.servicebus import AzureServiceBusPeekLockError
 from django.core.management.base import BaseCommand
 
@@ -12,6 +13,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         while True:
+            django.db.close_old_connections()
             message = receive_queue_message(QUEUE_JOB_EXTRACT_HASHTAG_COUNT)
             if message.body is None:
                 print('The message body is None')
