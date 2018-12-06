@@ -1,5 +1,6 @@
 import time
 
+from azure.servicebus import AzureServiceBusPeekLockError
 from django.core.management.base import BaseCommand
 
 from fe_azure.queue import receive_queue_message, QUEUE_JOB_EXTRACT_HASHTAG_COUNT
@@ -28,8 +29,10 @@ class Command(BaseCommand):
                     tag.save()
 
             print('Deleting message...')
-            message.delete()
-            print('Message deleted!')
-
+            try:
+                message.delete()
+                print('Message deleted!')
+            except AzureServiceBusPeekLockError:
+                print('Timeout getting new message!')
             print('Sleep for 1 seconds...')
             time.sleep(1)

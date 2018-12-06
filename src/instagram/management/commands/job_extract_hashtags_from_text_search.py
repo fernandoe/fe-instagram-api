@@ -1,5 +1,6 @@
 import time
 
+from azure.servicebus import AzureServiceBusPeekLockError
 from django.core.management.base import BaseCommand
 
 from fe_azure.queue import QUEUE_JOB_EXTRACT_HASHTAGS_FROM_TEXT_SEARCH, send_to_job_extract_hashtag_count, \
@@ -25,9 +26,12 @@ class Command(BaseCommand):
                     if created or tag.last_count is None:
                         print(f'Tag: {tag} - Created: {created}')
                         send_to_job_extract_hashtag_count(hashtag)
-            print('Deleting message...')
-            message.delete()
-            print('Message deleted!')
 
+            print('Deleting message...')
+            try:
+                message.delete()
+                print('Message deleted!')
+            except AzureServiceBusPeekLockError:
+                print('Timeout getting new message!')
             print('Sleep for 1 seconds...')
             time.sleep(1)
