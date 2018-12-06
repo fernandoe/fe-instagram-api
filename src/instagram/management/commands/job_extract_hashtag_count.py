@@ -14,14 +14,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         while True:
             message = receive_queue_message(QUEUE_JOB_EXTRACT_HASHTAG_COUNT)
-            hashtag = message.body.decode("utf-8")
-            print(f'Hashtag: {hashtag}')
-            tag, created = Tag.objects.get_or_create(name=hashtag)
-            if created or tag.last_count is None:
-                print(f'Getting the count...')
-                count = extract_count(hashtag)
-                tag.last_count = count
-                tag.save()
+            if message.body is None:
+                print('The message body is None')
+            else:
+                hashtag = message.body.decode("utf-8")
+                print(f'Hashtag: {hashtag}')
+                tag, created = Tag.objects.get_or_create(name=hashtag)
+                if created or tag.last_count is None:
+                    print(f'Getting the count...')
+                    count = extract_count(hashtag)
+                    tag.last_count = count
+                    tag.save()
 
             print('Deleting message...')
             message.delete()
