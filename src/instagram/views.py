@@ -73,7 +73,7 @@ def search_impl(q, limit):
 
         tags_in_database = {}
         for tag in Tag.objects.filter(name__in=tag_list):
-            tags_in_database[tag] = tag.last_count
+            tags_in_database[tag.name] = tag.last_count
 
         for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
             print(f"{idx}: {tag}")
