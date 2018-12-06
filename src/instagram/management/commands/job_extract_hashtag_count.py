@@ -1,3 +1,4 @@
+import logging
 import time
 
 import django.db
@@ -8,6 +9,8 @@ from fe_azure.queue import receive_queue_message, QUEUE_JOB_EXTRACT_HASHTAG_COUN
 from instagram.helpers import extract_count
 from instagram.models import Tag
 
+logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
 
@@ -16,13 +19,13 @@ class Command(BaseCommand):
             django.db.close_old_connections()
             message = receive_queue_message(QUEUE_JOB_EXTRACT_HASHTAG_COUNT)
             if message.body is None:
-                print('The message body is None')
+                logger.info('The message body is None')
             else:
                 hashtag = message.body.decode("utf-8")
-                print(f'Hashtag: {hashtag}')
+                logger.info(f'Hashtag: {hashtag}')
                 tag, created = Tag.objects.get_or_create(name=hashtag)
                 if created or tag.last_count is None:
-                    print(f'Getting the count...')
+                    logger.info(f'Getting the count...')
                     count = extract_count(hashtag)
                     if count is None:
                         tag.last_count = -1
@@ -30,11 +33,11 @@ class Command(BaseCommand):
                         tag.last_count = count
                     tag.save()
 
-            print('Deleting message...')
+            logger.info('Deleting message...')
             try:
                 message.delete()
-                print('Message deleted!')
+                logger.info('Message deleted!')
             except AzureServiceBusPeekLockError:
-                print('Timeout getting new message!')
-            print('Sleep for 1 seconds...')
+                logger.info('Timeout getting new message!')
+            logger.info('Sleep for 1 seconds...')
             time.sleep(1)

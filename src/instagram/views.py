@@ -1,11 +1,16 @@
-import os
 import json
+import logging
+import os
+
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.connections import connections
+
 from instagram.models import Tag, TagPriority, TextSearch
+
+logger = logging.getLogger(__name__)
 
 connections.create_connection(hosts=[os.getenv('FE_ELASTICSEARCH_HOST')])
 
@@ -28,13 +33,13 @@ def tags(request):
     s.aggs.bucket('wordcloud', 'terms', field='tags', size=35)
     response = s.execute()
     for hit in response:
-        print(hit)
+        logger.debug(hit)
 
     result = []
     result_count = []
     index = []
     for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
-        print(f"{idx}: {tag}")
+        logger.info(f"{idx}: {tag}")
         result.append(f"#{tag.key}")
         result_count.append(f"{tag.doc_count}".ljust(len(tag.key) + 1))
         index.append(f"{idx+1}".ljust(len(tag.key) + 1))
@@ -64,7 +69,7 @@ def search_impl(q, limit):
         s.aggs.bucket('wordcloud', 'terms', field='tags', size=limit)
         response = s.execute()
         for hit in response:
-            print(hit)
+            logger.info(hit)
 
         # get tags in our database
         tag_list = []
@@ -76,7 +81,7 @@ def search_impl(q, limit):
             tags_in_database[tag.name] = tag.last_count
 
         for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
-            print(f"{idx}: {tag}")
+            logger.info(f"{idx}: {tag}")
             result['items'].append({
                 'name': tag.key,
                 'count': tags_in_database[tag.key] if tag.key in tags_in_database else None,

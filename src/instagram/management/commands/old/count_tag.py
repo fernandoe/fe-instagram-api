@@ -1,11 +1,8 @@
 import json
-import re
 
 import requests
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
-
-from instagram.models import Tag
 
 
 class Command(BaseCommand):

@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -8,6 +9,7 @@ from fe_core.models import UUIDModel
 
 from fe_azure.queue import send_to_job_extract_hashtags_from_text_search
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -44,7 +46,7 @@ class Post(UUIDModel):
 
     def indexing(self):
         from instagram.search import PostIndex
-        print('indexing...')
+        logger.info(f'=> indexing({self}')
         tags = []
         if len(self.tags) > 0:
             tags = self.tags.split(' ')
@@ -76,6 +78,6 @@ class TextSearch(UUIDModel):
 
 @receiver(post_save, sender=TextSearch)
 def post_save_text_search(sender, instance, created, raw, using, **kwargs):
-    print(f'=> post_save_text_search(instance={instance}, created={created})')
+    logger.info(f'=> post_save_text_search(instance={instance}, created={created})')
     if created is True:
         send_to_job_extract_hashtags_from_text_search(str(instance.uuid))
