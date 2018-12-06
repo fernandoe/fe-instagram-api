@@ -138,3 +138,15 @@ def extract_words_from_message(message):
     result.extend(words_2_add)
 
     return result
+
+
+def extract_count(hashtag: str) -> int:
+    print(f'==> extract_count({hashtag})')
+    r = requests.get(f'https://www.instagram.com/explore/tags/{hashtag}/')
+    if r.status_code == 404:
+        return None
+    soup = BeautifulSoup(r.text, 'lxml')
+    script = soup.find('script', text=lambda t: t.startswith('window._sharedData'))
+    page_json = script.text.split(' = ', 1)[1].rstrip(';')
+    data = json.loads(page_json)
+    return data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['count']
