@@ -17,6 +17,7 @@ class Tag(UUIDModel):
     name = models.CharField(max_length=100, unique=True)
     last_count = models.IntegerField(null=True)
     languages = models.CharField(max_length=100, null=True)
+    valid = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
