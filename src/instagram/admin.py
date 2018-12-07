@@ -17,9 +17,9 @@ class TagCountModelAdmin(admin.ModelAdmin):
     ordering = ('tag',)
 
 
-class InjestAtFilter(admin.SimpleListFilter):
+class IngestAtFilter(admin.SimpleListFilter):
     title = 'Injest At'
-    parameter_name = 'injest_at__isnull'
+    parameter_name = 'ingest_at__isnull'
 
     def lookups(self, request, model_admin):
         return (
@@ -29,16 +29,16 @@ class InjestAtFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == 'False':
-            return queryset.filter(injest_at__isnull=False)
+            return queryset.filter(ingest_at__isnull=False)
         if self.value() == 'True':
-            return queryset.filter(injest_at__isnull=True)
+            return queryset.filter(ingest_at__isnull=True)
 
 
 @admin.register(Post)
 class PostModelAdmin(admin.ModelAdmin):
-    list_filter = (InjestAtFilter,)
+    list_filter = (IngestAtFilter,)
     search_fields = ('uuid', 'shortcode', 'tags')
-    list_display = ('get_uuid', 'shortcode', 'injest_at', 'tags')
+    list_display = ('get_uuid', 'shortcode', 'ingest_at', 'tags')
     ordering = ('shortcode',)
 
 

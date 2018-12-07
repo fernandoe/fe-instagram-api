@@ -18,6 +18,8 @@ class Command(BaseCommand):
         while True:
             django.db.close_old_connections()
             message = receive_queue_message(QUEUE_JOB_EXTRACT_HASHTAG_COUNT)
+            if message:
+                continue
             if message.body is None:
                 logger.info('The message body is None')
             else:

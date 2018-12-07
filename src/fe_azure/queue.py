@@ -1,6 +1,7 @@
 import logging
 import os
 
+from azure.common import AzureHttpError
 from azure.servicebus import ServiceBusService, Message
 
 logger = logging.getLogger(__name__)
@@ -11,6 +12,7 @@ FE_AZURE_SHARED_ACCESS_KEY_VALUE = os.getenv('FE_AZURE_SHARED_ACCESS_KEY_VALUE')
 
 QUEUE_JOB_EXTRACT_HASHTAGS_FROM_TEXT_SEARCH = 'job-extract-hashtags-from-text-search'
 QUEUE_JOB_EXTRACT_HASHTAG_COUNT = 'job-extract-hashtag-count'
+QUEUE_JOB_EXTRACT_POST_FROM_HASHTAG = 'job-extract-post-from-hashtag'
 
 bus_service = ServiceBusService(service_namespace=SERVICE_BUS_NAMESPACE,
                                 shared_access_key_name=FE_AZURE_SHARED_ACCESS_KEY_NAME,
@@ -34,6 +36,16 @@ def send_to_job_extract_hashtag_count(hashtag_name: str) -> None:
     bus_service.send_queue_message(QUEUE_JOB_EXTRACT_HASHTAG_COUNT, message)
 
 
+def send_to_job_extract_post_from_hashtag(hashtag_name: str) -> None:
+    logger.info(f'=> send_to_job_extract_post_from_hashtag({hashtag_name})')
+    message = Message(hashtag_name)
+    bus_service.send_queue_message(QUEUE_JOB_EXTRACT_POST_FROM_HASHTAG, message)
+
+
 def receive_queue_message(queue_name):
     logger.info(f'=> receive_queue_message({queue_name})')
-    return bus_service.receive_queue_message(queue_name, peek_lock=True)
+    try:
+        return bus_service.receive_queue_message(queue_name, peek_lock=True)
+    except AzureHttpError as err:
+        logger.error(f'AzureHttpError: {err}')
+        return None

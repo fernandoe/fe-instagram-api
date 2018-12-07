@@ -19,11 +19,11 @@ class Command(BaseCommand):
 
             PostIndex.init()
 
-            posts = Post.objects.filter(injest_at__isnull=True)
+            posts = Post.objects.filter(ingest_at__isnull=True)
             for post in posts.iterator():
                 print(f"Processing: {post}")
                 post.indexing()
-                post.injest_at = datetime.datetime.now(tz=timezone.utc)
+                post.ingest_at = datetime.datetime.now(tz=timezone.utc)
                 post.save()
 
             print('Sleep for 5 seconds...')
