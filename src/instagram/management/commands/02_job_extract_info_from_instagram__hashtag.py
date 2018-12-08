@@ -1,16 +1,11 @@
 import json
 import logging
-import re
-import time
 
-import django.db
 import requests
-from azure.servicebus import AzureServiceBusPeekLockError
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
-from fe_azure.queue import receive_queue_message, QUEUE_JOB_EXTRACT_POST_FROM_HASHTAG
-from instagram.models import Tag, Post
+from instagram.models import Tag, Post, Profile
 
 logger = logging.getLogger(__name__)
 
@@ -73,20 +68,38 @@ def extract_info_from_instagram__hashtag(hashtag: str) -> bool:
     process_posts_in('edge_hashtag_to_media', data)
     process_posts_in('edge_hashtag_to_top_posts', data)
 
-#
-# def process_posts_in(field, data):
-#     for post in data['entry_data']['TagPage'][0]['graphql']['hashtag'][field]['edges']:
-#         if len(post['node']['edge_media_to_caption']['edges']) == 0:
-#             continue
-#         message = post['node']['edge_media_to_caption']['edges'][0]['node']['text']
-#         shortcode = post['node']['shortcode']
-#
-#         logger.info(f"Message: {message}")
-#         words = extract_words_from_message(message)
-#         tags_in_message = set(filter(is_valid_tag, words))
-#         logger.info('Valid Tags: %s' % tags_in_message)
-#         try:
-#             Post.objects.get(shortcode=shortcode)
-#         except Post.DoesNotExist:
-#             tags_in_str = ' '.join([e[1:] for e in tags_in_message])
-#             Post.objects.create(shortcode=shortcode, tags=tags_in_str)
+
+def process_posts_in(field, data):
+    for post in data['entry_data']['TagPage'][0]['graphql']['hashtag'][field]['edges']:
+        if len(post['node']['edge_media_to_caption']['edges']) == 0:
+            continue
+
+        data = {
+            'identifier': post['node']['id'],
+            'shortcode': post['node']['shortcode'],
+            'message': post['node']['edge_media_to_caption']['edges'][0]['node']['text'].encode('utf-8'),
+            'taken_at_timestamp': post['node']['taken_at_timestamp'],
+            'display_url': post['node']['display_url'],
+            'edge_liked_by': post['node']['edge_liked_by']['count'],
+            'owner': post['node']['owner']['id']
+        }
+        logger.debug(f'data: {data}')
+
+        profile, created = Profile.objects.get_or_create(identifier=data['owner'])
+        data['profile'] = profile
+
+        post, created = Post.objects.get_or_create(shortcode=data['shortcode'])
+        for attr, value in data.items():
+            setattr(post, attr, value)
+        post.save()
+        logger.debug(f'Post created: {created} - Post: {post}')
+
+        # logger.info(f"Message: {message}")
+        # words = extract_words_from_message(message)
+        # tags_in_message = set(filter(is_valid_tag, words))
+        # logger.info('Valid Tags: %s' % tags_in_message)
+        # try:
+        #     Post.objects.get(shortcode=shortcode)
+        # except Post.DoesNotExist:
+        #     tags_in_str = ' '.join([e[1:] for e in tags_in_message])
+        #     Post.objects.create(shortcode=shortcode, tags=tags_in_str)

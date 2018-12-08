@@ -41,10 +41,16 @@ def update_tag_last_count(sender, instance, created, raw, using, **kwargs):
 
 
 class Post(UUIDModel):
-    identifier = models.IntegerField(null=True)
-    shortcode = models.CharField(max_length=100, unique=True)
-    tags = models.TextField()
+    identifier = models.CharField(max_length=50, db_index=True, null=True)
+    shortcode = models.CharField(max_length=50, unique=True)
+    message = models.TextField(null=True)
+    taken_at_timestamp = models.IntegerField(null=True)
+    display_url = models.URLField(max_length=400, null=True)
+    liked = models.IntegerField(null=True)
+    owner = models.CharField(max_length=50, null=True)
+    profile = models.ForeignKey('Profile', on_delete=models.CASCADE, null=True)
     ingest_at = models.DateTimeField(null=True)
+    tags = models.TextField(null=True)
 
     def indexing(self):
         from instagram.search import PostIndex
@@ -59,6 +65,10 @@ class Post(UUIDModel):
         )
         obj.save()
         return obj.to_dict(include_meta=True)
+
+
+class Profile(UUIDModel):
+    identifier = models.CharField(max_length=50, db_index=True)
 
 
 class TagPriority(UUIDModel):
