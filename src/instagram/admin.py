@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Tag, TagCount, Post, TagPriority, TextSearch
+from .models import Tag, TagCount, Post, TagPriority, TextSearch, Profile
 
 
 @admin.register(Tag)
@@ -71,3 +71,9 @@ class TextSearchModelAdmin(admin.ModelAdmin):
     list_filter = (IngestAtFilter,)
     search_fields = ('uuid', 'text')
     list_display = ('get_uuid', 'text', 'result', 'ingest_at')
+
+
+@admin.register(Profile)
+class ProfileModelAdmin(admin.ModelAdmin):
+    search_fields = ('uuid', 'identifier')
+    list_display = ('get_uuid', 'identifier')
