@@ -1,3 +1,11 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# import os
+# from elasticsearch_dsl.connections import connections
+# from instagram.search import PostIndex
+# elasticsearch_host = os.getenv('FE_ELASTICSEARCH_HOST')
+# connections.create_connection(hosts=[elasticsearch_host])
+# PostIndex.init()
+# ----------------------------------------------------------------------------------------------------------------------
 # from elasticsearch_dsl.connections import connections
 # from elasticsearch_dsl.connections import connections
 # connections.create_connection(hosts=['elasticsearch'])
@@ -38,26 +46,25 @@
 # pi = PostIndex()
 # pi.init()
 # ----------------------------------------------------------------------------------------------------------------------
-from elasticsearch_dsl import Search
-from elasticsearch_dsl.connections import connections
-connections.create_connection(hosts=['elasticsearch'])
-# client = Elasticsearch()
-s = Search(index="post-index") \
-    .query("match", tags="banana")
+# from elasticsearch_dsl import Search
+# from elasticsearch_dsl.connections import connections
+# connections.create_connection(hosts=['elasticsearch'])
+# # client = Elasticsearch()
+# s = Search(index="post-index") \
+#     .query("match", tags="banana")
+# # response = s.execute()
+# # response
+# s.aggs.bucket('wordcloud', 'terms', field='tags')
+# # \
+#     # .metric('max_lines', 'max', field='lines')
 # response = s.execute()
-# response
-s.aggs.bucket('wordcloud', 'terms', field='tags')
-# \
-    # .metric('max_lines', 'max', field='lines')
-response = s.execute()
-for hit in response:
-    print(hit)
-    # print(hit.meta.score, hit.title)
-
-for tag in response.aggregations.per_tag.buckets:
-    print(tag)
+# for hit in response:
+#     print(hit)
+#     # print(hit.meta.score, hit.title)
+#
+# for tag in response.aggregations.per_tag.buckets:
+#     print(tag)
 # ----------------------------------------------------------------------------------------------------------------------
-
 # GET post-index/_search
 # {
 #   "query": {

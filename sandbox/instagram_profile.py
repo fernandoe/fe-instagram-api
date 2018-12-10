@@ -1,3 +1,16 @@
+import json
+
+import requests
+from bs4 import BeautifulSoup
+
+url = 'https://www.instagram.com/emagrecendocomsaude_18/'
+r = requests.get(url)
+soup = BeautifulSoup(r.text, 'lxml')
+script = soup.find('script', text=lambda t: t.startswith('window._sharedData'))
+page_json = script.text.split(' = ', 1)[1].rstrip(';')
+data = json.loads(page_json)
+print(data)
+
 # ----------------------------------------------------------------------------------------------------------------------
 # from django.db.models import Count
 # from instagram.models import Tag, TagCount
