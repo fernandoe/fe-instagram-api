@@ -121,7 +121,7 @@ def process_posts_in(field, data, tags):
 
 def extract_words_from_message(message):
     result = []
-    words = message.lower().split(' ')
+    words = message.encode('utf-8').lower().split(' ')
     words_2_add = []
     for word in words:
         if '\n' in word:
