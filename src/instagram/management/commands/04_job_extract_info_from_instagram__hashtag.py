@@ -1,10 +1,14 @@
 import json
 import logging
+import time
 
+import django.db
 import requests
+from azure.servicebus import AzureServiceBusPeekLockError
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
+from fe_azure.queue import receive_queue_message, QUEUE_HASHTAG
 from instagram.models import Tag, Post, Profile
 
 logger = logging.getLogger(__name__)
@@ -16,26 +20,28 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         hashtag = options['hashtag']
-        extract_info_from_instagram__hashtag(hashtag)
-        #
-        # while True:
-        #     django.db.close_old_connections()
-        #     message = receive_queue_message(QUEUE_JOB_EXTRACT_POST_FROM_HASHTAG)
-        #     if message:
-        #         continue
-        #     if message.body is None:
-        #         logger.info('The message body is None')
-        #     else:
-        #         hashtag = message.body.decode("utf-8")
-        #         process(hashtag)
-        #     logger.info('Deleting message...')
-        #     try:
-        #         message.delete()
-        #         logger.info('Message deleted!')
-        #     except AzureServiceBusPeekLockError:
-        #         logger.info('Timeout getting new message!')
-        #     logger.info('Sleep for 1 seconds...')
-        #     time.sleep(1)
+
+        if hashtag:
+            extract_info_from_instagram__hashtag(hashtag)
+        else:
+            while True:
+                time.sleep(1)
+                django.db.close_old_connections()
+                message = receive_queue_message(QUEUE_HASHTAG)
+                if message is None:
+                    continue
+                if message.body is None:
+                    logger.info(f'The message body is {message.body}')
+                else:
+                    hashtag = message.body.decode("utf-8")
+                    extract_info_from_instagram__hashtag(hashtag)
+                logger.info('Deleting message...')
+                try:
+                    message.delete()
+                    logger.info('Message deleted!')
+                except AzureServiceBusPeekLockError:
+                    logger.info('Timeout getting new message!')
+                logger.info('Sleep for 1 seconds...')
 
 
 def extract_info_from_instagram__hashtag(hashtag: str) -> bool:
@@ -93,13 +99,3 @@ def process_posts_in(field, data):
             setattr(post, attr, value)
         post.save()
         logger.debug(f'Post created: {created} - Post: {post}')
-
-        # logger.info(f"Message: {message}")
-        # words = extract_words_from_message(message)
-        # tags_in_message = set(filter(is_valid_tag, words))
-        # logger.info('Valid Tags: %s' % tags_in_message)
-        # try:
-        #     Post.objects.get(shortcode=shortcode)
-        # except Post.DoesNotExist:
-        #     tags_in_str = ' '.join([e[1:] for e in tags_in_message])
-        #     Post.objects.create(shortcode=shortcode, tags=tags_in_str)

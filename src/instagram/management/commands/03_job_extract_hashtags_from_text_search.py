@@ -5,9 +5,8 @@ import django.db
 from azure.servicebus import AzureServiceBusPeekLockError
 from django.core.management.base import BaseCommand
 
-from fe_azure.queue import receive_queue_message, QUEUE_JOB_EXTRACT_HASHTAG_COUNT
-from instagram.helpers import extract_count
-from instagram.models import Tag
+from fe_azure.queue import QUEUE_TEXT_SEARCH, receive_queue_message, send_to_queue_hashtag
+from instagram.models import TextSearch, Tag
 
 logger = logging.getLogger(__name__)
 
@@ -17,23 +16,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         while True:
             django.db.close_old_connections()
-            message = receive_queue_message(QUEUE_JOB_EXTRACT_HASHTAG_COUNT)
+            message = receive_queue_message(QUEUE_TEXT_SEARCH)
             if message:
                 continue
             if message.body is None:
                 logger.info('The message body is None')
             else:
-                hashtag = message.body.decode("utf-8")
-                logger.info(f'Hashtag: {hashtag}')
-                tag, created = Tag.objects.get_or_create(name=hashtag)
-                if created or tag.last_count is None:
-                    logger.info(f'Getting the count...')
-                    count = extract_count(hashtag)
-                    if count is None:
-                        tag.last_count = -1
-                    else:
-                        tag.last_count = count
-                    tag.save()
+                text_search_uuid = message.body.decode("utf-8")
+                logger.info(f'text_search_uuid: {text_search_uuid}')
+                text_search = TextSearch.objects.get(uuid=text_search_uuid)
+                hashtags = text_search.get_hashtags_from_result()
+                for hashtag in hashtags:
+                    logger.info(f'Processing tag: {hashtag}')
+                    send_to_queue_hashtag(hashtag)
+                    Tag.objects.get_or_create(name=hashtag)
 
             logger.info('Deleting message...')
             try:

@@ -7,7 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from fe_core.models import UUIDModel
 
-from fe_azure.queue import send_to_job_extract_hashtags_from_text_search
+from fe_azure.queue import send_to_queue_text_search, send_to_queue_hashtag
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -24,6 +24,12 @@ class Tag(UUIDModel):
 
     class Meta:
         ordering = ("name",)
+
+
+@receiver(post_save, sender=Tag)
+def update_tag_count(sender, instance, created, raw, using, **kwargs):
+    if created is True:
+        send_to_queue_hashtag(instance.name)
 
 
 class TagCount(UUIDModel):
@@ -92,4 +98,4 @@ class TextSearch(UUIDModel):
 def post_save_text_search(sender, instance, created, raw, using, **kwargs):
     logger.info(f'=> post_save_text_search(instance={instance}, created={created})')
     if created is True:
-        send_to_job_extract_hashtags_from_text_search(str(instance.uuid))
+        send_to_queue_text_search(str(instance.uuid))
