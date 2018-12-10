@@ -4,6 +4,7 @@ import time
 
 import django.db
 import requests
+from azure.common import AzureMissingResourceHttpError
 from azure.servicebus import AzureServiceBusPeekLockError
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
@@ -41,7 +42,9 @@ class Command(BaseCommand):
                     message.delete()
                     logger.info('Message deleted!')
                 except AzureServiceBusPeekLockError:
-                    logger.info('Timeout getting new message!')
+                    logger.error('AzureServiceBusPeekLockError: Timeout getting new message!')
+                except AzureMissingResourceHttpError:
+                    logger.error('AzureMissingResourceHttpError')
                 logger.info('Sleep for 1 seconds...')
 
 
