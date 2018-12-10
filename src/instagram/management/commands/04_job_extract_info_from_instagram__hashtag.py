@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
 from fe_azure.queue import receive_queue_message, QUEUE_HASHTAG
+from instagram.helpers import extract_words_from_message, is_valid_tag
 from instagram.models import Tag, Post, Profile, TagCount
 
 logger = logging.getLogger(__name__)
@@ -92,11 +93,20 @@ def process_posts_in(field, data):
         }
         logger.debug(f'data: {data}')
 
+        # profile
         profile, created = Profile.objects.get_or_create(identifier=data['owner'])
         data['profile'] = profile
+
+        # tags
+        words = extract_words_from_message(data['message'])
+        tags_in_message = set(filter(is_valid_tag, words))
+        logger.info('Valid Tags: %s' % tags_in_message)
+        data['tags'] = ' '.join([e[1:] for e in tags_in_message])
 
         post, created = Post.objects.get_or_create(shortcode=data['shortcode'])
         for attr, value in data.items():
             setattr(post, attr, value)
         post.save()
+        if created is True:
+            post.indexing()
         logger.debug(f'Post created: {created} - Post: {post}')

@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 
@@ -5,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 from fe_core.models import UUIDModel
 
 from fe_azure.queue import send_to_queue_text_search, send_to_queue_hashtag
@@ -60,16 +62,22 @@ class Post(UUIDModel):
 
     def indexing(self):
         from instagram.search import PostIndex
-        logger.info(f'=> indexing({self}')
-        tags = []
-        if len(self.tags) > 0:
-            tags = self.tags.split(' ')
-        obj = PostIndex(
-            uuid=self.uuid,
-            tags=tags,
-            created_at=self.created_at
-        )
-        obj.save()
+        logger.info(f'=> Post.indexing({self})')
+        if self.ingest_at is None:
+            tags = []
+            if len(self.tags) > 0:
+                tags = self.tags.split(' ')
+            obj = PostIndex(
+                uuid=self.uuid,
+                tags=tags,
+                created_at=self.created_at
+            )
+            obj.save()
+            self.ingest_at = datetime.datetime.now(tz=timezone.utc)
+            self.save()
+            logger.info(f'Ingested successfully!')
+        else:
+            logger.info(f'Already ingested at {self.ingest_at}')
         return obj.to_dict(include_meta=True)
 
 
