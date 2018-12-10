@@ -120,8 +120,10 @@ def process_posts_in(field, data, tags):
 
 
 def extract_words_from_message(message):
+    if type(message) is bytes:
+        message = message.decode('utf-8')
     result = []
-    words = message.encode('utf-8').lower().split(' ')
+    words = message.lower().split(' ')
     words_2_add = []
     for word in words:
         if '\n' in word:
