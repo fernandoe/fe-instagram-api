@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
 from fe_azure.queue import receive_queue_message, QUEUE_HASHTAG
-from instagram.models import Tag, Post, Profile
+from instagram.models import Tag, Post, Profile, TagCount
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,8 @@ def extract_info_from_instagram__hashtag(hashtag: str) -> bool:
     data = json.loads(page_json)
 
     count = data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_media']['count']
-    print(count)
+    if created or tag.last_count is None:
+        TagCount.objects.create(tag=tag, count=count)
 
     process_posts_in('edge_hashtag_to_media', data)
     process_posts_in('edge_hashtag_to_top_posts', data)
