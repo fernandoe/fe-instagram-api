@@ -3,7 +3,7 @@ import os
 
 from azure.common import AzureHttpError
 from azure.servicebus import ServiceBusService, Message
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, ReadTimeout
 
 logger = logging.getLogger(__name__)
 
@@ -44,4 +44,6 @@ def receive_queue_message(queue_name):
         logger.error(f'AzureHttpError: {err}')
     except ConnectionError as err:
         logger.error(f'ConnectionError: {err}')
+    except ReadTimeout as err:
+        logger.error(f'ReadTimeout: {err}')
     return None

@@ -82,7 +82,7 @@ class Post(UUIDModel):
 
 
 class Profile(UUIDModel):
-    identifier = models.CharField(max_length=50, db_index=True)
+    identifier = models.CharField(max_length=50, unique=True, db_index=True)
 
 
 class TagPriority(UUIDModel):
