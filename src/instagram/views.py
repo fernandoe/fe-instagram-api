@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from operator import itemgetter
 
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -60,10 +61,7 @@ def search_impl(q, limit):
     except ValueError:
         limit = 30
 
-    result = {
-        'items': []
-    }
-
+    items = []
     if q:
         s = Search(index="post-index").query("match", tags=q)
         s.aggs.bucket('wordcloud', 'terms', field='tags', size=limit)
@@ -82,11 +80,16 @@ def search_impl(q, limit):
 
         for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
             logger.info(f"{idx}: {tag}")
-            result['items'].append({
+            if tag.key not in tags_in_database:
+                continue
+            items.append({
                 'name': tag.key,
-                'count': tags_in_database[tag.key] if tag.key in tags_in_database else None,
+                'count': tags_in_database[tag.key],
                 'doc_count': tag.doc_count,
                 'index': idx + 1
             })
+
+        sorted_result = sorted(items, key=itemgetter('count'), reverse=True)
+        result = {'items': sorted_result}
         TextSearch.objects.create(text=q, result=json.dumps(result))
     return JsonResponse(result)
