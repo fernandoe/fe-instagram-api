@@ -70,7 +70,7 @@ class IngestAtFilter(admin.SimpleListFilter):
 class TextSearchModelAdmin(admin.ModelAdmin):
     list_filter = (IngestAtFilter,)
     search_fields = ('uuid', 'text')
-    list_display = ('get_uuid', 'text', 'result', 'ingest_at')
+    list_display = ('get_uuid', 'text', 'result', 'status', 'ingest_at')
 
 
 @admin.register(Profile)

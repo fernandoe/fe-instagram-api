@@ -90,9 +90,18 @@ class TagPriority(UUIDModel):
 
 
 class TextSearch(UUIDModel):
+    STATUS_CREATED = 'C'
+    STATUS_PROCESSING = 'P'
+    STATUS_PROCESSED = 'O'
+    STATUS_CHOICES = (
+        (STATUS_CREATED, 'Criado'),
+        (STATUS_PROCESSING, 'Processando'),
+        (STATUS_PROCESSED, 'Processado'),
+    )
     text = models.CharField(max_length=100)
     result = models.TextField()
     ingest_at = models.DateTimeField(null=True)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=STATUS_CREATED)
 
     def get_hashtags_from_result(self):
         result = []
