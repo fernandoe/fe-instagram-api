@@ -105,9 +105,14 @@ class TextSearch(UUIDModel):
 
     def get_hashtags_from_result(self):
         result = []
-        items = json.loads(self.result)['items']
+        data = json.loads(self.result)
+        items = data['items']
         for item in items:
             result.append(item['name'])
+
+        unsorted_items = data['unsorted_items']
+        for item in unsorted_items:
+            result.append(item)
         return result
 
 

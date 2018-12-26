@@ -1,4 +1,4 @@
-# fe-hashtag-api
+# fe-hashtags-api
 
 ## Queues
 

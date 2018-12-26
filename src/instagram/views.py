@@ -75,9 +75,12 @@ def search_impl(q, limit):
             tag_list.append(tag.key)
 
         tags_in_database = {}
+        unsorted_tags = []
         for tag in Tag.objects.filter(name__in=tag_list):
             if tag.last_count:
                 tags_in_database[tag.name] = tag.last_count
+            else:
+                unsorted_tags.append(tag.name)
 
         for idx, tag in enumerate(response.aggregations.wordcloud.buckets):
             logger.info(f"{idx}: {tag}")
@@ -92,5 +95,7 @@ def search_impl(q, limit):
 
         sorted_result = sorted(items, key=itemgetter('count'), reverse=True)
         result = {'items': sorted_result}
+        if len(unsorted_tags) > 0:
+            result['unsorted_items'] = unsorted_tags
         TextSearch.objects.create(text=q, result=json.dumps(result))
     return JsonResponse(result)

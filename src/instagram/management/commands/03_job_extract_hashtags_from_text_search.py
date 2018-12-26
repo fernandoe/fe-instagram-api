@@ -33,6 +33,8 @@ class Command(BaseCommand):
                     logger.info(f'Processing hashtag: {hashtag}')
                     send_to_queue_hashtag(hashtag)
                     Tag.objects.get_or_create(name=hashtag)
+                text_search.status = TextSearch.STATUS_PROCESSED
+                text_search.save()
 
             logger.info('Deleting message...')
             try:
